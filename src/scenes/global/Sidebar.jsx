@@ -44,6 +44,12 @@ const Sidebar = () => {
   return (
     <Box
       sx={{
+        // top: 0,
+        // left: 0,
+        // bottom: 0,
+        // zIndex: 1000,
+        // backgroundColor: colors.primary[400],
+
         "& .pro-sidebar-inner": {
           background: `${colors.primary[400]} !important`,
         },
@@ -78,6 +84,7 @@ const Sidebar = () => {
                 justifyContent="space-between"
                 alignItems="center"
                 ml="15px"
+                overflow="auto"
               >
                 <Typography variant="h3" color={colors.grey[100]}>
                   ADMINIS
@@ -154,7 +161,7 @@ const Sidebar = () => {
               setSelected={setSelected}
             />
 
-            <Typography
+            {/* <Typography
               variant="h6"
               color={colors.grey[300]}
               sx={{ m: "15px 0 5px 20px" }}
@@ -217,7 +224,7 @@ const Sidebar = () => {
               icon={<MapOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
-            />
+            /> */}
           </Box>
         </Menu>
       </ProSidebar>
