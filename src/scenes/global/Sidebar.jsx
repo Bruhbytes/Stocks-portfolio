@@ -87,7 +87,7 @@ const Sidebar = () => {
                 overflow="auto"
               >
                 <Typography variant="h3" color={colors.grey[100]}>
-                  ADMINIS
+                  PORTFOLIO
                 </Typography>
                 <IconButton onClick={() => setIsCollapsed(!isCollapsed)}>
                   <MenuOutlinedIcon />
@@ -114,10 +114,10 @@ const Sidebar = () => {
                   fontWeight="bold"
                   sx={{ m: "10px 0 0 0" }}
                 >
-                  Ed Roh
+                  Email ID
                 </Typography>
                 <Typography variant="h5" color={colors.greenAccent[500]}>
-                  VP Fancy Admin
+                  You
                 </Typography>
               </Box>
             </Box>

@@ -17,10 +17,15 @@ import ProgressCircle from "../../components/ProgressCircle";
 import * as React from "react";
 import ReactVirtualizedTable from "../table/Table";
 import ModifiedButton from "../../components/Buttons";
+import { useState } from "react";
 
 const Dashboard = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const [showPopup, setshowpopup] = useState(false);
+  const [cash, setCash] = useState(0);
+
+
 
   return (
     <Box m="20px" position="relative">
@@ -37,12 +42,38 @@ const Dashboard = () => {
               fontWeight: "bold",
               padding: "10px 20px",
             }}
+            onClick={() => {setshowpopup(!showPopup)}}
           >
             <DownloadOutlinedIcon sx={{ mr: "10px" }} />
-            Download Reports
+            Add Cash
           </Button>
+          {showPopup && <div style={{
+          position: "absolute",
+          width: "15rem",
+          height: "200px",
+          right: "40%",
+          backgroundColor:"#141b2d",
+          borderRadius: "20px",
+          zIndex:"100",
+          textAlign:"center",
+          border: "solid #4cceac 3px"
+        }}>
+          <h2 style={{color:"#4cceac", margin:"1rem auto"}}>Enter the amount of money</h2>
+          <input type="number" style={{width: "100px", margin:"1rem auto", fontSize:"1.5rem", display:"block"}} name="cash" value={cash} onChange={(e) => {setCash(e.target.value)}}></input>
+          <Button sx={{
+              backgroundColor: colors.blueAccent[700],
+              color: colors.grey[100],
+              fontSize: "14px",
+              fontWeight: "bold",
+              padding: "5px 10px",
+
+            }}
+            onClick={() => {setshowpopup(false)}}
+            >Ok</Button>
+        </div>}
         </Box>
       </Box>
+      
 
       {/* GRID & CHARTS */}
       <Box
@@ -61,10 +92,10 @@ const Dashboard = () => {
           justifyContent="center"
         >
           <StatBox
-            title="12,361"
+            title="0"
             subtitle="Total Investment"
-            progress="0.75"
-            increase="+14%"
+            progress="0.0"
+            // increase="+14%"
             icon={
               <AccountBalanceWalletIcon
                 sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
@@ -80,10 +111,10 @@ const Dashboard = () => {
           justifyContent="center"
         >
           <StatBox
-            title="431,225"
+            title={cash}
             subtitle="Cash Holdings"
-            progress="0.50"
-            increase="+21%"
+            progress="100"
+            // increase="+21%"
             icon={
               <AttachMoneyIcon
                 sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
@@ -99,10 +130,10 @@ const Dashboard = () => {
           justifyContent="center"
         >
           <StatBox
-            title="32,441"
+            title="0"
             subtitle="Total Gain"
             progress="0.30"
-            increase="+5%"
+            // increase="+5%"
             icon={
               <PersonAddIcon
                 sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
@@ -118,10 +149,10 @@ const Dashboard = () => {
           justifyContent="center"
         >
           <StatBox
-            title="1,325,134"
+            title="0"
             subtitle="Day Gain"
             progress="0.80"
-            increase="+43%"
+            // increase="+43%"
             icon={
               <TrafficIcon
                 sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
@@ -129,6 +160,7 @@ const Dashboard = () => {
             }
           />
         </Box>
+        
 
         {/* ROW 2 */}
         <Box
@@ -282,7 +314,7 @@ const Dashboard = () => {
             <GeographyChart isDashboard={true} />
           </Box>
         </Box> */}
-        <Box
+        {/* <Box
           gridColumn="span 12"
           gridRow="span 4"
           backgroundColor={colors.primary[400]}
@@ -292,7 +324,7 @@ const Dashboard = () => {
           <br />
           <br />
           <ReactVirtualizedTable />
-        </Box>
+        </Box> */}
       </Box>
     </Box>
   );

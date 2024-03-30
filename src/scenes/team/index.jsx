@@ -1,4 +1,4 @@
-import { Box, Typography, useTheme } from "@mui/material";
+import { Box, Button, Typography, useTheme, TextField, IconButton } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
 import { mockDataTeam } from "../../data/mockData";
@@ -6,10 +6,41 @@ import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettin
 import LockOpenOutlinedIcon from "@mui/icons-material/LockOpenOutlined";
 import SecurityOutlinedIcon from "@mui/icons-material/SecurityOutlined";
 import Header from "../../components/Header";
+import { useEffect, useState } from "react";
+import axios from 'axios';
+import SearchIcon from "@mui/icons-material/Search";
+import Stock from "../../components/Stock";
+
 
 const Team = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const [showStocks, setShowStocks] = useState(false);
+  const [stockName, setStockName] = useState("");
+  const [data, setData] = useState(null);
+
+
+  const options = {
+    method: 'GET',
+    url: 'https://cnbc.p.rapidapi.com/v2/auto-complete',
+    params: { q: `${stockName}` },
+    headers: {
+      'X-RapidAPI-Key': '7dffc95252mshce349b5aea69b96p1cb258jsn8e50fde1c28d',
+      'X-RapidAPI-Host': 'cnbc.p.rapidapi.com'
+    }
+  };
+
+  async function handleClick() {
+    try {
+      const response = await axios.request(options);
+      console.log(response.data);
+      setData(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+
+  }
+
   const columns = [
     { field: "id", headerName: "ID" },
     {
@@ -51,8 +82,8 @@ const Team = () => {
               access === "admin"
                 ? colors.greenAccent[600]
                 : access === "manager"
-                ? colors.greenAccent[700]
-                : colors.greenAccent[700]
+                  ? colors.greenAccent[700]
+                  : colors.greenAccent[700]
             }
             borderRadius="4px"
           >
@@ -70,8 +101,49 @@ const Team = () => {
 
   return (
     <Box m="20px">
-      <Header title="TEAM" subtitle="Managing the Team Members" />
-      <Box
+      <Header title="TEAM" subtitle="Managing the Stocks" />
+      <TextField
+        fullWidth
+        variant="filled"
+        type="text"
+        label="Stock Name"
+        name="StockName"
+        value={stockName}
+        sx={{ gridColumn: "span 2" }}
+        onChange={(e) => setStockName(e.target.value)}
+      style={{width: "95%"}}
+      />
+      <IconButton type="button" sx={{ p: 1 }} >
+        <SearchIcon style={{fontSize: "2rem"}} onClick={handleClick}/>
+      </IconButton>
+      {data && <div style={{
+        backgroundColor: "#141b2d"        
+      }}>
+        {data.data.symbolEntries.tags[0].results.map((res, ind) => {
+          return(
+            <Stock 
+            country={res.countryCode}
+            exchange={res.exchangeName}
+            key={ind}
+            name={res.name}
+            symbol={res.symbol}
+            issueID={res.issueId}
+            />
+          )
+        })}
+      </div>}
+
+      <Button sx={{
+        backgroundColor: colors.blueAccent[700],
+        color: colors.grey[100],
+        fontSize: "14px",
+        fontWeight: "bold",
+        padding: "5px 10px",
+        display:"block"
+      }}
+        
+      >Add Stock</Button>
+      {showStocks && <Box
         m="40px 0 0 0"
         height="75vh"
         sx={{
@@ -101,7 +173,7 @@ const Team = () => {
         }}
       >
         <DataGrid checkboxSelection rows={mockDataTeam} columns={columns} />
-      </Box>
+      </Box>}
     </Box>
   );
 };

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Topbar from "./scenes/global/Topbar";
 import Sidebar from "./scenes/global/Sidebar";
 import Dashboard from "./scenes/dashboard";
@@ -15,23 +15,48 @@ import Geography from "./scenes/geography";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { ColorModeContext, useMode } from "./theme";
 import Calendar from "./scenes/calendar/calendar";
+import CreatePortfolio from "./components/CreatePortfolio";
+import Login from "./pages/Login";
+import SignUp from "./pages/SignUp";
+import Logout from "./pages/Logout";
+
 
 function App() {
   const [theme, colorMode] = useMode();
   const [isSidebar, setIsSidebar] = useState(true);
+  const location = useLocation();
+
+  const routesWithoutTopbarSidebar = ["/", "/login", "/signup"];
+
+  // Check if the current location matches any route where Topbar and Sidebar should be hidden
+  const shouldHideTopbarSidebar = routesWithoutTopbarSidebar.includes(location.pathname);
+
+
 
   return (
     <ColorModeContext.Provider value={colorMode}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <div className="app">
-          <Sidebar isSidebar={isSidebar} />
+        {!shouldHideTopbarSidebar && (
+            <>
+              <Sidebar isSidebar={isSidebar} />
+              <Topbar setIsSidebar={setIsSidebar} />
+            </>
+          )}
           <main className="content">
-            <Topbar setIsSidebar={setIsSidebar} />
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/team" element={<Team />} />
-              <Route path="/contacts" element={<Contacts />} />
+          {/* <Sidebar isSidebar={isSidebar} />
+          <main className="content">
+            <Topbar setIsSidebar={setIsSidebar} /> */}
+            <Routes>                            
+              {/* <Route path="/" element={user ? <CreatePortfolio /> : <Navigate to="/login" />} />                             */}
+              <Route path="/" element={<CreatePortfolio /> } />                            
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<SignUp />} />
+              <Route path="/logout" element={<Logout/>}/>
+              <Route path="/dashboard" element={<Dashboard /> } />
+              <Route path="/team" element={<Team /> } />
+              <Route path="/contacts" element={<Contacts /> } />
               <Route path="/invoices" element={<Invoices />} />
               <Route path="/form" element={<Form />} />
               <Route path="/bar" element={<Bar />} />

@@ -1,0 +1,241 @@
+
+/* Set background gradient */
+/* body {
+  background: linear-gradient(to bottom right, #0a0a2a, #141446);
+  color: #fff;
+} */
+
+/* Flex container for main content */
+.App {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* Container for dashboard content */
+.dashboard {
+  text-align: center;
+  max-width: 600px; /* Limit dashboard content width */
+  padding: 20px;
+}
+
+/* Heading styles */
+.createh1 {
+  font-size: 36px;
+  margin-bottom: 20px;
+}
+
+/* Button styles */
+.create-portfolio-btn {
+  padding: 15px 30px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 20px;
+  transition: background-color 0.3s ease;
+}
+
+.create-portfolio-btn:hover {
+  background-color: #0056b3;
+}
+
+/* Modal styles */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1; /* Ensure modal appears above other content */
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  animation: fadeIn 0.3s ease; /* Fade-in animation */
+}
+
+.modal-content {
+  background-color: #222;
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  max-width: 400px; /* Limit modal width */
+  width: 100%;
+}
+
+/* Close button styles */
+.close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 24px;
+  color: #888;
+  cursor: pointer;
+}
+
+/* Form input styles */
+
+select,
+.btncreate {
+  margin: 10px 0;
+  padding: 12px;
+  width: 100%;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+/* Form button styles */
+ .btncreate{
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+} 
+
+ button:hover {
+  background-color: #0056b3; 
+} 
+
+/* Animation for modal */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* App.css */
+
+/* Other styles */
+
+/* Portfolio grid layout */
+.portfolio-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Responsive grid with minimum item width of 300px */
+  grid-gap: 30px; /* Increased gap between grid items */
+  border-radius: 20px; /* Rounded corners for the grid */
+  padding: 30px; /* Add padding to the grid */
+  background: linear-gradient(to bottom right, #3333ff, #ff3333); /* Gradient background */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); /* Enhanced box shadow */
+}
+
+/* Portfolio card */
+.portfolio-card {
+  background-color: #fff;
+  padding: 10px;
+  border-radius: 20px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  color: #333; /* Text color */
+  border: 2px solid gray; /* Transparent border initially */
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease; /* Add transition effect */
+}
+
+/* Portfolio card hover effect */
+.portfolio-card:hover {
+  transform: translateY(-8px); /* Move card slightly up on hover */
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3); /* Add larger box shadow on hover for elevation */
+  border-color: #66ff66; /* Change border color on hover */
+}
+
+/* Portfolio card title */
+.portfolio-card h3 {
+  font-size: 20px; /* Increase font size */
+  margin-bottom: 20px; /* Increased margin */
+  color: #333; /* Text color */
+}
+
+/* Portfolio card text */
+.portfolio-card p {
+  font-size: 14px; /* Increase font size */
+  color: #666; /* Text color */
+}
+
+
+/* Other styles */
+
+
+
+.signup-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin:10rem;
+}
+
+.signup-form {
+  background-color: #fff;
+  padding: 2rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  width: 25rem;
+}
+
+.signup-heading {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color:black;
+}
+
+.signup-label {
+  display: block;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+  color:black;
+}
+
+.signup-input {
+  padding: 0.75rem;
+  width: 100%;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 0.25rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.signup-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.signup-btn-div {
+  margin-top: 1rem;
+}
+
+.signup-btn {
+  padding: 0.75rem 1.5rem;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.signup-btn:hover {
+  background-color: #0056b3;
+}
+
+.login-link {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.custom-link {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.custom-link:hover {
+  text-decoration: underline;
+}
