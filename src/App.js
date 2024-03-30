@@ -25,13 +25,16 @@ function App() {
   const [theme, colorMode] = useMode();
   const [isSidebar, setIsSidebar] = useState(true);
   const location = useLocation();
+  const [user, setUser] = useState(null);
 
   const routesWithoutTopbarSidebar = ["/", "/login", "/signup"];
 
   // Check if the current location matches any route where Topbar and Sidebar should be hidden
   const shouldHideTopbarSidebar = routesWithoutTopbarSidebar.includes(location.pathname);
 
-
+  if(localStorage.getItem("portauth")){
+    setUser(localStorage.getItem("portauth"));
+  }
 
   return (
     <ColorModeContext.Provider value={colorMode}>
@@ -54,7 +57,7 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<SignUp />} />
               <Route path="/logout" element={<Logout/>}/>
-              <Route path="/dashboard" element={<Dashboard /> } />
+              <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />} />
               <Route path="/team" element={<Team /> } />
               <Route path="/contacts" element={<Contacts /> } />
               <Route path="/invoices" element={<Invoices />} />

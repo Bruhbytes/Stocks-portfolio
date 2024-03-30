@@ -5,6 +5,7 @@ const bcrypt = require("bcrypt");
 const { body, validationResult } = require('express-validator');
 require("dotenv").config();
 const bodyParser = require('body-parser');
+const jwt = require("jsonwebtoken");
 
 const app = express();
 app.use(cors({
@@ -121,13 +122,7 @@ app.post("/api/login", async (req, res) => {
   
       res.status(200).json({
         success: true,
-        message: "Login successful!",
-        user: {
-          
-          email: user.email,
-          password: password,
-        },
-        token,
+        token: token,
       });
     } catch (error) {
       

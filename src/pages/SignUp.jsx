@@ -25,6 +25,8 @@ const Signup = () => {
         password,
       });
       if (response && response.data) {
+        if(response.status==201)
+          navigate("/login");
         console.log(response.data);
         // setEmail(response.data.email);
         

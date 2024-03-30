@@ -2,6 +2,7 @@ import "../pages/common.css";
 import React from 'react'
 import { useState, useEffect } from 'react';
 import { useAuth } from "../context/auth";
+import { useNavigate } from "react-router-dom";
 
 const CreatePortfolio = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -11,13 +12,18 @@ const CreatePortfolio = () => {
   const [currency, setCurrency] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [auth, setAuth] = useAuth();
+  const navigate = useNavigate();
 
     useEffect(() => {
         // Check if the user is logged in
         // Simulate user login status with localStorage
         // const userLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-        setIsLoggedIn(true);
-        console.log(auth);
+
+        if (localStorage.getItem("portauth")) {
+          setIsLoggedIn(true);
+        } else {
+          navigate("/login");
+        }
         // If user is logged in, fetch their portfolios
         if (isLoggedIn) {
           fetchPortfolios();
