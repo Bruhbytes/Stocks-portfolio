@@ -5,6 +5,7 @@ import { useAuth } from "../context/auth";
 import axios from "axios";
 import Portfolio from "./Portfolio";
 
+import { useNavigate } from "react-router-dom";
 
 const CreatePortfolio = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -15,13 +16,25 @@ const CreatePortfolio = () => {
     const [errorMessage, setErrorMessage] = useState("");
     const [auth, setAuth] = useAuth();
     const [cardData, setCardData] = useState([]);
+  const navigate = useNavigate();
 
     useEffect(() => {
-        fetchPortfolios();
-        fillerData();
-    }, []);
+        // Check if the user is logged in
+        // Simulate user login status with localStorage
+        // const userLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
-    const options = {
+        if (localStorage.getItem("portauth")) {
+          setIsLoggedIn(true);
+          fetchPortfolios();
+          fillerData();
+        } else {
+          navigate("/login");
+        }
+        // If user is logged in, fetch their portfolios                
+      }, []);
+
+    
+      const options = {
         method: 'GET',
         url: 'https://apidojo-yahoo-finance-v1.p.rapidapi.com/market/v2/get-summary',
         params: { region: 'IN' },
@@ -43,9 +56,7 @@ const CreatePortfolio = () => {
         }
 
     }
-
-    const fetchPortfolios = () => {
-
+      const fetchPortfolios = () => {
         axios.get("http://localhost:4000/api/portfolio")
             .then(response => {
                 if (response.status === 200) {
@@ -54,9 +65,9 @@ const CreatePortfolio = () => {
                 }
             })
             .catch(err => console.log(err));
-    };
-
-    const createPortfolio = () => {
+      };
+    
+      const createPortfolio = () => {
         // Function to create a new portfolio
         // This could be implemented to send a request to the backend to create a new portfolio
         const newPortfolio = {

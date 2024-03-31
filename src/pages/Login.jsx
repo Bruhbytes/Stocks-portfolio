@@ -1,5 +1,5 @@
 import "./common.css";
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -16,6 +16,12 @@ const Login = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [type, setType] = useState("password");
+
+    useEffect(()=>{
+      if(localStorage.getItem("portauth")){
+        navigate("/")
+      }
+    },[])
     
   
     const handleSubmit = async (e) => {
@@ -31,20 +37,14 @@ const Login = () => {
         );
 
         if (response && response.data.success) {
-          toast.success(response.data && response.data.message);
-          setAuth({
-            ...auth,
-            user: response.data.user,
-            token: response.data.token,
-          });
-          console.log(useAuth);
+          
+          console.log(response.data.token);
   
-          localStorage.setItem("portauth", JSON.stringify(response.data));
+          localStorage.setItem("portauth", JSON.stringify(response.data.token));
           // navigate("/");
-          navigate("/createPortfolio")
+          navigate("/")
         } else {
           
-          toast.error(response.data.message);
         }
       } catch (err) {
         console.error(err.message);
@@ -115,7 +115,7 @@ const Login = () => {
   
           <div className="mt-2">
             <p className="">Don't have an account?</p>
-            <Link to="/register" className="custom-link">
+            <Link to="/signup" className="custom-link">
               Create Account
             </Link>
   

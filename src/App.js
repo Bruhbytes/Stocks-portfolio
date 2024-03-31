@@ -19,19 +19,25 @@ import CreatePortfolio from "./components/CreatePortfolio";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import Logout from "./pages/Logout";
-
+import { useEffect } from "react";
 
 function App() {
   const [theme, colorMode] = useMode();
   const [isSidebar, setIsSidebar] = useState(true);
   const location = useLocation();
+  const [user, setUser] = useState(null);
 
   const routesWithoutTopbarSidebar = ["/", "/login", "/signup"];
 
   // Check if the current location matches any route where Topbar and Sidebar should be hidden
   const shouldHideTopbarSidebar = routesWithoutTopbarSidebar.includes(location.pathname);
 
-
+  useEffect(() => {
+    const auth = localStorage.getItem("portauth");
+    if (auth) {
+      setUser(auth);
+    }
+  }, []);
 
   return (
     <ColorModeContext.Provider value={colorMode}>
@@ -54,7 +60,7 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<SignUp />} />
               <Route path="/logout" element={<Logout/>}/>
-              <Route path="/dashboard" element={<Dashboard /> } />
+              <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />} />
               <Route path="/team/:name" element={<Team /> } />
               <Route path="/contacts/:name" element={<Contacts /> } />
               <Route path="/invoices" element={<Invoices />} />
