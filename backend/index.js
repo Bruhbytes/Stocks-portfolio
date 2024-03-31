@@ -8,9 +8,7 @@ const bodyParser = require('body-parser');
 
 const app = express();
 app.use(cors({
-    origin: ["http://localhost:3000"],
-    methods: "GET,POST,PUT,DELETE",
-    credentials: true,
+    origin: ["http://localhost:3000"],    
 }))
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(express.json());
@@ -24,6 +22,24 @@ const userSchema = new mongoose.Schema({
 });
 
 const User = mongoose.model("User", userSchema);
+
+const stockSchema = new mongoose.Schema({
+    name: String,
+    symbol: String,
+    exchange: String,
+    issueId: Number,    
+    country: String
+})
+
+const Stock = mongoose.model("Stock", stockSchema);
+
+const portfolioSchema = new mongoose.Schema({
+    email: String,
+    name: String,
+    currency: String,
+    stocks: [stockSchema]
+})
+const Portfolio = mongoose.model("Portfolio", portfolioSchema);
 
 app.use((req, res, next) => {
     console.log(req.path, req.method);
@@ -135,6 +151,63 @@ app.post("/api/login", async (req, res) => {
       res.status(500).json({ success:false, message: "Internal server error" });
     }
   });
+
+app.post('/api/portfolio', async (req, res) => {
+    const {email, name, currency, stocks} = req.body;
+    console.log(name, currency);
+    const portfolio = new Portfolio({
+        email: email,
+        name: name,
+        currency: currency,
+        stocks: []
+    });
+    await portfolio.save().then(response => {
+        res.status(200).json({"message": response});
+    })
+    .catch(err => {res.status(500).json({"error": err})});
+})
+
+app.get('/api/portfolio', async (req, res) => {
+    try {
+        const result = await Portfolio.find({});    
+        res.status(200).json(result);        
+    } catch (error) {
+        res.status(400).json({"error":error});
+    }
+})
+
+app.get('/api/stocks/:name', async(req, res) => {
+    try{
+        const portFolioName = req.params.name;
+        console.log(portFolioName);
+
+        Portfolio.findOne({name: portFolioName})
+        .then(portfolio => {
+            const result = portfolio.stocks;
+            console.log(result);
+            res.status(200).json({result});
+        });
+    }
+    catch(err){
+        res.status(400).json({"error":err});
+    }
+})
+
+app.post('/api/stocks/:name', async(req, res) => {
+    const portFolioName = req.params.name;
+    const data = req.body;
+
+    Portfolio.findOne({name: portFolioName})
+    .then(async portfolio => {
+        portfolio.stocks.push(data);
+        await portfolio.save();    
+    })
+    .catch(err => console.log(err));
+
+    res.status(200).json({data, name: portFolioName});
+})
+
+
 try {
     mongoose
         .connect(process.env.MONGODB_URL, {

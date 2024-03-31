@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import axios from 'axios';
 import SearchIcon from "@mui/icons-material/Search";
 import Stock from "../../components/Stock";
+import { useParams } from "react-router-dom";
 
 
 const Team = () => {
@@ -18,6 +19,23 @@ const Team = () => {
   const [showStocks, setShowStocks] = useState(false);
   const [stockName, setStockName] = useState("");
   const [data, setData] = useState(null);
+  const [stocks, setStocks] = useState([]);
+
+  const {name} = useParams();
+  
+  useEffect(() => {
+    fetchStocks();
+  }, [])
+
+  const fetchStocks = () => {
+    axios.get(`http://localhost:4000/api/stocks/${name}`)
+    .then(response => {
+      console.log(response);   
+      if(response.status === 200)   
+        setStocks(response.data);
+    })
+    .catch(err => console.log(err));
+  }
 
 
   const options = {
@@ -25,7 +43,7 @@ const Team = () => {
     url: 'https://cnbc.p.rapidapi.com/v2/auto-complete',
     params: { q: `${stockName}` },
     headers: {
-      'X-RapidAPI-Key': '7dffc95252mshce349b5aea69b96p1cb258jsn8e50fde1c28d',
+      'X-RapidAPI-Key': '2abc076573msh842064a611d99bfp1579c6jsn755dbe9509d7',
       'X-RapidAPI-Host': 'cnbc.p.rapidapi.com'
     }
   };
@@ -35,6 +53,7 @@ const Team = () => {
       const response = await axios.request(options);
       console.log(response.data);
       setData(response.data);
+      setStockName("");
     } catch (error) {
       console.error(error);
     }
@@ -101,7 +120,7 @@ const Team = () => {
 
   return (
     <Box m="20px">
-      <Header title="TEAM" subtitle="Managing the Stocks" />
+      <Header title={name} subtitle="Managing the Stocks" />
       <TextField
         fullWidth
         variant="filled"
@@ -126,6 +145,7 @@ const Team = () => {
             exchange={res.exchangeName}
             key={ind}
             name={res.name}
+            portfolioName={name}
             symbol={res.symbol}
             issueID={res.issueId}
             />
@@ -133,16 +153,7 @@ const Team = () => {
         })}
       </div>}
 
-      <Button sx={{
-        backgroundColor: colors.blueAccent[700],
-        color: colors.grey[100],
-        fontSize: "14px",
-        fontWeight: "bold",
-        padding: "5px 10px",
-        display:"block"
-      }}
-        
-      >Add Stock</Button>
+      
       {showStocks && <Box
         m="40px 0 0 0"
         height="75vh"

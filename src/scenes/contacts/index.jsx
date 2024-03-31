@@ -4,50 +4,165 @@ import { tokens } from "../../theme";
 import { mockDataContacts } from "../../data/mockData";
 import Header from "../../components/Header";
 import { useTheme } from "@mui/material";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import axios from "axios";
 
 const Contacts = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const [stocks, setStocks] = useState([]);
+  const [list, setList] = useState("");
+  const {name} = useParams();
+  const [Detailed, setDetailed] = useState([]);
+  const [idCtr, setIdctr] = useState(0);
+
+  useEffect(() => {
+    fetchStocks();
+  }, [])
+
+  // useEffect(() => {
+  //   if (stocks && stocks.length > 0) {
+
+  //     setTimeout(fetchDetailedStocks, 3000);
+  //   }
+  // }, [stocks, setStocks])
+
+  function fetchStocks() {
+    axios.get(`http://localhost:4000/api/stocks/${name}`)
+    .then(response => {
+      console.log(response.data.result);   
+      if(response.status === 200)   
+        setStocks(response.data.result);
+    })
+    .catch(err => console.log(err));
+  }
+
+  // const options = {
+  //   method: 'GET',
+  //   url: 'https://cnbc.p.rapidapi.com/symbols/get-summary',
+  //   params: {
+  //     issueIds: `${list}`
+  //   },
+  //   headers: {
+  //     'X-RapidAPI-Key': '7dffc95252mshce349b5aea69b96p1cb258jsn8e50fde1c28d',
+  //     'X-RapidAPI-Host': 'cnbc.p.rapidapi.com'
+  //   }
+  // };
+
+  useEffect(() => {
+    if (stocks) {
+      const fetchData = async () => {
+        for (const stock of stocks) {
+          const options = {
+            method: 'GET',
+            url: 'https://cnbc.p.rapidapi.com/symbols/get-summary',
+            params: {
+              issueIds: `${stock.issueId}`
+            },
+            headers: {
+              'X-RapidAPI-Key': '2abc076573msh842064a611d99bfp1579c6jsn755dbe9509d7',
+              'X-RapidAPI-Host': 'cnbc.p.rapidapi.com'
+            }
+          };
+  
+          try {
+            const response = await axios.request(options);
+            console.log("final", response.data.ITVQuoteResult.ITVQuote);
+            const object = {
+              id: `${stock._id}`,
+              symbol: response.data.ITVQuoteResult.ITVQuote.symbol,
+              last: response.data.ITVQuoteResult.ITVQuote.last,            
+              high: response.data.ITVQuoteResult.ITVQuote.high,
+              low: response.data.ITVQuoteResult.ITVQuote.low,
+              'chg%': response.data.ITVQuoteResult.ITVQuote.change,
+              volume: response.data.ITVQuoteResult.ITVQuote.volume,
+              exchange: response.data.ITVQuoteResult.ITVQuote.exchange,
+              open: response.data.ITVQuoteResult.ITVQuote.open,
+              currency: response.data.ITVQuoteResult.ITVQuote.currencyCode
+            };
+            setIdctr(idCtr + 1);
+            setDetailed(prevDetailed => [...prevDetailed, object]);
+          } catch (error) {
+            console.error(error);
+          }
+        }
+      };
+      fetchData();
+    }
+  }, [stocks]);
+  
+
+  // async function fetchDetailedStocks(){  
+  //   if (!stocks) {      
+  //     return; // Return early if stocks is null or undefined
+  //   }
+  
+  //   stocks.forEach((stock) => {
+  //     if (stock.issueId) {
+  //       const newlist = list + stock.issueId + ",";
+  //       setList(newlist);
+  //     }
+  //   });
+  //   console.log(list);
+
+  //   try {
+  //     const response = await axios.request(options);
+  //     console.log("final", response.data);
+  //     setSemiDetailed(response.data);
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // }
 
   const columns = [
-    { field: "id", headerName: "ID", flex: 0.5 },
-    { field: "registrarId", headerName: "Registrar ID" },
+    {field: "id", headerName: "ID"},
+    { field: "symbol", headerName: "Symbol", cellClassName: "name-column--cell" },
     {
-      field: "name",
-      headerName: "Name",
+      field: "last",
+      headerName: "Last Price",
       flex: 1,
       cellClassName: "name-column--cell",
     },
     {
-      field: "age",
-      headerName: "Age",
+      field: "high",
+      headerName: "High",
       type: "number",
       headerAlign: "left",
       align: "left",
     },
     {
-      field: "phone",
-      headerName: "Phone Number",
+      field: "low",
+      headerName: "Low",
+      type: "number",
+      headerAlign: "left",
+      align: "left",
+    },
+    {
+      field: "chg%",
+      headerName: "Change%",
       flex: 1,
     },
     {
-      field: "email",
-      headerName: "Email",
+      field: "volume",
+      headerName: "Volume",
+      type: "number",
+      align: "left",
       flex: 1,
     },
     {
-      field: "address",
-      headerName: "Address",
+      field: "exchange",
+      headerName: "Exchange",
       flex: 1,
     },
     {
-      field: "city",
-      headerName: "City",
+      field: "open",
+      headerName: "Open",
       flex: 1,
     },
     {
-      field: "zipCode",
-      headerName: "Zip Code",
+      field: "currency",
+      headerName: "Currency",
       flex: 1,
     },
   ];
@@ -55,8 +170,8 @@ const Contacts = () => {
   return (
     <Box m="20px">
       <Header
-        title="CONTACTS"
-        subtitle="List of Contacts for Future Reference"
+        title={name}
+        subtitle="List of Stocks you selected"
       />
       <Box
         m="40px 0 0 0"
@@ -91,9 +206,10 @@ const Contacts = () => {
         }}
       >
         <DataGrid
-          rows={mockDataContacts}
+          rows={Detailed}
           columns={columns}
           components={{ Toolbar: GridToolbar }}
+          getRowId={(row) => row.id}
         />
       </Box>
     </Box>
