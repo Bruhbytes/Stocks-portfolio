@@ -16,10 +16,14 @@ import PieChartOutlineOutlinedIcon from "@mui/icons-material/PieChartOutlineOutl
 import TimelineOutlinedIcon from "@mui/icons-material/TimelineOutlined";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
 import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
+import { useSelector } from "react-redux";
+
 
 const Item = ({ title, to, icon, selected, setSelected }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const activePortfolio = useSelector((state) => state.money.activePortfolio);
+
   return (
     <MenuItem
       active={selected === title}
@@ -141,14 +145,14 @@ const Sidebar = () => {
             </Typography>
             <Item
               title="Add Stocks"
-              to="/team/Broad stocks"
+              to={`/team/Broad stocks`}
               icon={<PeopleOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
             />
             <Item
               title="My Holdings"
-              to="/contacts"
+              to={`/contacts/Broad stocks`}
               icon={<ContactsOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}

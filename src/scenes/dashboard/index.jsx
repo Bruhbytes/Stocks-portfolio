@@ -18,12 +18,18 @@ import * as React from "react";
 import ReactVirtualizedTable from "../table/Table";
 import ModifiedButton from "../../components/Buttons";
 import { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { setMoney } from "../../features/moneySlice";
 
 const Dashboard = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const [showPopup, setshowpopup] = useState(false);
-  const [cash, setCash] = useState(0);
+  // const [cash, setCash] = useState(0);
+  const money = useSelector(state => state.money.money)
+
+  const dispatch = useDispatch();
+
 
 
 
@@ -59,7 +65,7 @@ const Dashboard = () => {
           border: "solid #4cceac 3px"
         }}>
           <h2 style={{color:"#4cceac", margin:"1rem auto"}}>Enter the amount of money</h2>
-          <input type="number" style={{width: "100px", margin:"1rem auto", fontSize:"1.5rem", display:"block"}} name="cash" value={cash} onChange={(e) => {setCash(e.target.value)}}></input>
+          <input type="number" style={{width: "100px", margin:"1rem auto", fontSize:"1.5rem", display:"block"}} name="cash" value={money} onChange={(e) => {dispatch(setMoney(e.target.value))}}></input>
           <Button sx={{
               backgroundColor: colors.blueAccent[700],
               color: colors.grey[100],
@@ -111,7 +117,7 @@ const Dashboard = () => {
           justifyContent="center"
         >
           <StatBox
-            title={cash}
+            title={money}
             subtitle="Cash Holdings"
             progress="100"
             // increase="+21%"

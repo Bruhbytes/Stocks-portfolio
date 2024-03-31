@@ -1,11 +1,17 @@
+import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { setActivePortfolio} from "../features/moneySlice";
 
 
 const Portfolio = (props) => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+
 
     function handleClick(){
+        dispatch(setActivePortfolio(props.name));
         navigate(`/team/${props.name}`);
+
     }
     return (
         <div style={{
