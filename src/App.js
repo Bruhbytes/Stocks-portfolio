@@ -20,6 +20,7 @@ import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import Logout from "./pages/Logout";
 import { useEffect } from "react";
+import Metrics from "./components/Metrics";
 
 function App() {
   const [theme, colorMode] = useMode();
@@ -71,6 +72,7 @@ function App() {
               <Route path="/faq" element={<FAQ />} />
               <Route path="/calendar" element={<Calendar />} />
               <Route path="/geography" element={<Geography />} />
+              <Route path="/metrics" element={<Metrics/>}/>
             </Routes>
           </main>
         </div>

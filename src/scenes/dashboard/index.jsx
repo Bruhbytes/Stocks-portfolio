@@ -19,15 +19,15 @@ import ReactVirtualizedTable from "../table/Table";
 import ModifiedButton from "../../components/Buttons";
 import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { setMoney } from "../../features/moneySlice";
+import { setMoney, setInvestment } from "../../features/moneySlice";
 
 const Dashboard = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const [showPopup, setshowpopup] = useState(false);
+  const [investment, setInvestment] = useState(0);
   // const [cash, setCash] = useState(0);
   const money = useSelector(state => state.money.money)
-
   const dispatch = useDispatch();
 
 
@@ -74,7 +74,7 @@ const Dashboard = () => {
               padding: "5px 10px",
 
             }}
-            onClick={() => {setshowpopup(false)}}
+            onClick={() => {setshowpopup(false); dispatch(setInvestment(100))}}
             >Ok</Button>
         </div>}
         </Box>
@@ -98,7 +98,7 @@ const Dashboard = () => {
           justifyContent="center"
         >
           <StatBox
-            title="0"
+            title={investment}
             subtitle="Total Investment"
             progress="0.0"
             // increase="+14%"
@@ -136,7 +136,7 @@ const Dashboard = () => {
           justifyContent="center"
         >
           <StatBox
-            title="0"
+            title="4.7"
             subtitle="Total Gain"
             progress="0.30"
             // increase="+5%"
@@ -155,7 +155,7 @@ const Dashboard = () => {
           justifyContent="center"
         >
           <StatBox
-            title="0"
+            title="3.4"
             subtitle="Day Gain"
             progress="0.80"
             // increase="+43%"

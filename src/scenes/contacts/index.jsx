@@ -1,31 +1,63 @@
-import { Box, Button } from "@mui/material";
+import { Box, Button, useTheme } from "@mui/material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
 import { mockDataContacts } from "../../data/mockData";
 import Header from "../../components/Header";
-import { useTheme } from "@mui/material";
+
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { setMoney } from "../../features/moneySlice";
 import { useSelector } from "react-redux";
 
+import { Navigate } from "react-router-dom";
 
 const Contacts = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const [stocks, setStocks] = useState([]);
   const [list, setList] = useState("");
-  const {name} = useParams();
+  const { name } = useParams();
   const [Detailed, setDetailed] = useState([]);
   const [idCtr, setIdctr] = useState(0);
   const [allocation, setAllocation] = useState(0);
+  const [strategy, setStrategy] = useState(null);
+  const [show, setShow] = useState(false);
 
   const money = useSelector((state) => state.money.money);
 
+  const navigate = useNavigate();
   useEffect(() => {
     fetchStocks();
-  }, [])
+    getStrategy();
+  }, []);
+
+  // Define a custom column for the button
+  const buttonColumn = {
+    field: "action",
+    headerName: "Action",
+    sortable: false,
+    width: 150,
+    disableClickEventBubbling: true,
+    renderCell: (params) => {
+      const handleClick = () => {
+        const rowData = params.row;
+        console.log("Row data:", rowData.symbol);
+        navigate('/metrics', { state: { symbol: rowData.symbol } });
+      };
+
+      return (
+        <Button
+          variant="contained"
+          color="primary"
+          size="small"
+          onClick={handleClick}
+        >
+          Action
+        </Button>
+      );
+    },
+  };
 
   // useEffect(() => {
   //   if (stocks && stocks.length > 0) {
@@ -36,14 +68,22 @@ const Contacts = () => {
 
   function fetchStocks() {    
     axios.get(`http://localhost:4000/api/stocks/${name}`)
+      .then(response => {
+        console.log(response.data.result);
+        if (response.status === 200)
+          setStocks(response.data.result);
+      })
+      .catch(err => console.log(err));
+  }
+
+  function getStrategy(){
+    axios.get('http://localhost:5000/strategy1')
     .then(response => {
-      console.log(response.data.result);   
-      if(response.status === 200)   
-        setStocks(response.data.result);
+      console.log(response.data);
+      setStrategy(response.data);
     })
     .catch(err => console.log(err));
   }
-
   // const options = {
   //   method: 'GET',
   //   url: 'https://cnbc.p.rapidapi.com/symbols/get-summary',
@@ -56,53 +96,73 @@ const Contacts = () => {
   //   }
   // };
 
-  // useEffect(() => {
-  //   if (stocks) {
-  //     const fetchData = async () => {
-  //       for (const stock of stocks) {
-  //         const options = {
-  //           method: 'GET',
-  //           url: 'https://cnbc.p.rapidapi.com/symbols/get-summary',
-  //           params: {
-  //             issueIds: `${stock.issueId}`
-  //           },
-  //           headers: {
-  //             'X-RapidAPI-Key': '2abc076573msh842064a611d99bfp1579c6jsn755dbe9509d7',
-  //             'X-RapidAPI-Host': 'cnbc.p.rapidapi.com'
-  //           }
-  //         };
-  
-  //         try {
-  //           const response = await axios.request(options);
-  //           console.log("final", response.data.ITVQuoteResult.ITVQuote);
-  //           const object = {
-  //             id: `${stock._id}`,
-  //             symbol: response.data.ITVQuoteResult.ITVQuote.symbol,
-  //             last: response.data.ITVQuoteResult.ITVQuote.last,            
-  //             high: response.data.ITVQuoteResult.ITVQuote.high,
-  //             low: response.data.ITVQuoteResult.ITVQuote.low,
-  //             'chg%': response.data.ITVQuoteResult.ITVQuote.change,
-  //             volume: response.data.ITVQuoteResult.ITVQuote.volume,
-  //             exchange: response.data.ITVQuoteResult.ITVQuote.exchange,
-  //             open: response.data.ITVQuoteResult.ITVQuote.open,
-  //             currency: response.data.ITVQuoteResult.ITVQuote.currencyCode
-  //           };
-  //           setIdctr(idCtr + 1);
-  //           setDetailed(prevDetailed => [...prevDetailed, object]);
-  //         } catch (error) {
-  //           console.error(error);
-  //         }
-  //       }
-  //     };
-  //     fetchData();
-  //   }
-  // }, [stocks]);
-  
+  useEffect(() => {
+    if (stocks) {
+      const fetchData = async () => {
+        for (const stock of stocks) {
+          const options = {
+            method: 'GET',
+            url: 'https://cnbc.p.rapidapi.com/symbols/get-summary',
+            params: {
+              issueIds: `${stock.issueId}`
+            },
+            headers: {
+              'X-RapidAPI-Key': '2abc076573msh842064a611d99bfp1579c6jsn755dbe9509d7',
+              'X-RapidAPI-Host': 'cnbc.p.rapidapi.com'
+            }
+          };
 
- 
+          try {
+            const response = await axios.request(options);
+            console.log("final", response.data.ITVQuoteResult.ITVQuote);
+            const object = {
+              id: `${stock._id}`,
+              symbol: response.data.ITVQuoteResult.ITVQuote.symbol,
+              last: response.data.ITVQuoteResult.ITVQuote.last,
+              high: response.data.ITVQuoteResult.ITVQuote.high,
+              low: response.data.ITVQuoteResult.ITVQuote.low,
+              'chg%': response.data.ITVQuoteResult.ITVQuote.change,
+              volume: response.data.ITVQuoteResult.ITVQuote.volume,
+              exchange: response.data.ITVQuoteResult.ITVQuote.exchange,
+              open: response.data.ITVQuoteResult.ITVQuote.open,
+              currency: response.data.ITVQuoteResult.ITVQuote.currencyCode
+            };
+            setIdctr(idCtr + 1);
+            setDetailed(prevDetailed => [...prevDetailed, object]);
+          } catch (error) {
+            console.error(error);
+          }
+        }
+      };
+      fetchData();
+    }
+  }, [stocks]);
+
+
+  // async function fetchDetailedStocks(){  
+  //   if (!stocks) {      
+  //     return; // Return early if stocks is null or undefined
+  //   }
+
+  //   stocks.forEach((stock) => {
+  //     if (stock.issueId) {
+  //       const newlist = list + stock.issueId + ",";
+  //       setList(newlist);
+  //     }
+  //   });
+  //   console.log(list);
+
+  //   try {
+  //     const response = await axios.request(options);
+  //     console.log("final", response.data);
+  //     setSemiDetailed(response.data);
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // }
 
   const columns = [
-    {field: "id", headerName: "ID"},
+    { field: "id", headerName: "ID" },
     { field: "symbol", headerName: "Symbol", cellClassName: "name-column--cell" },
     {
       field: "last",
@@ -193,11 +253,27 @@ const Contacts = () => {
       >
         <DataGrid
           rows={Detailed}
-          columns={columns}
+          columns={[...columns, buttonColumn]}
           components={{ Toolbar: GridToolbar }}
           getRowId={(row) => row.id}
         />
 
+
+        <div style={{
+
+        }}>
+          {show && strategy && (
+            <div>
+              <ul>
+        {Object.entries(strategy).map(([key, value]) => 
+        
+        (
+          <li key={key}>{key}: {value}</li>
+        ))}
+      </ul>
+            </div>
+          )}
+        </div>
         <Button sx={{
           backgroundColor: colors.blueAccent[700],
           color: colors.grey[100],
@@ -210,7 +286,11 @@ const Contacts = () => {
           // right:"20px",
           zIndex:"10",
           // top:"10px"
-        }}>Add Strategy</Button>
+        }}
+        onClick={() => {
+          setShow(true);
+        }}
+        >Get stocks using Strategy 1</Button>
 
         <input value={allocation} name="allocation"></input>
         <Button sx={{
