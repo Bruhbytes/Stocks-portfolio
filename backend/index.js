@@ -9,7 +9,7 @@ const jwt = require("jsonwebtoken");
 
 const app = express();
 app.use(cors({
-    origin: ["http://localhost:3000"],    
+    origin: ["http://localhost:3000"],
 }))
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(express.json());
@@ -28,8 +28,10 @@ const stockSchema = new mongoose.Schema({
     name: String,
     symbol: String,
     exchange: String,
-    issueId: Number,    
-    country: String
+    issueId: Number,
+    country: String,
+    buyingPrice: Number,
+    count: Number
 })
 
 const Stock = mongoose.model("Stock", stockSchema);
@@ -38,7 +40,9 @@ const portfolioSchema = new mongoose.Schema({
     email: String,
     name: String,
     currency: String,
-    stocks: [stockSchema]
+    stocks: [stockSchema],
+    cash: Number,
+    investment: Number
 })
 const Portfolio = mongoose.model("Portfolio", portfolioSchema);
 
@@ -62,10 +66,10 @@ app.post("/api/signup", [
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
-    
+
     try {
         const email = req.body.email;
-        const password= req.body.password;
+        const password = req.body.password;
         console.log(email, password);
 
         // const existingUser = await User.findOne({email});
@@ -107,7 +111,7 @@ app.post("/api/signup", [
     } catch (error) {
         console.error(error);
 
-        res.status(500).json({            
+        res.status(500).json({
             message: "Internal server error"
         });
     }
@@ -115,92 +119,135 @@ app.post("/api/signup", [
 // Login Route
 app.post("/api/login", async (req, res) => {
     try {
-      const { email, password } = req.body;
-      console.log(`email: ${email}`)
-      console.log(`password: ${password}`)
-  
-      // Find user by email
-      const user = await User.findOne({ email });
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-  
-      // Compare passwords
-      const passwordMatch = bcrypt.compare(password, user.password);
-      if (!passwordMatch) {
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
-  
-      // Generate JWT token
-      const token = jwt.sign({ userId: user._id }, "secretKey", {
-        expiresIn: "5d",
-      });
-  
-      res.status(200).json({
-        success: true,
-        token: token,
-      });
+        const { email, password } = req.body;
+        console.log(`email: ${email}`)
+        console.log(`password: ${password}`)
+
+        // Find user by email
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Compare passwords
+        const passwordMatch = bcrypt.compare(password, user.password);
+        if (!passwordMatch) {
+            return res.status(401).json({ message: "Invalid credentials" });
+        }
+
+        // Generate JWT token
+        const token = jwt.sign({ userId: user._id }, "secretKey", {
+            expiresIn: "1d",
+        });
+
+        res.status(200).json({
+            success: true,
+            token: token,
+            email: user.email
+        });
     } catch (error) {
-      
-      console.log(error);
-      res.status(500).json({ success:false, message: "Internal server error" });
+
+        console.log(error);
+        res.status(500).json({ success: false, message: "Internal server error" });
     }
-  });
+});
 
 app.post('/api/portfolio', async (req, res) => {
-    const {email, name, currency, stocks} = req.body;
+    const { email, name, currency, stocks, cash, investment } = req.body;
     console.log(name, currency);
     const portfolio = new Portfolio({
         email: email,
         name: name,
         currency: currency,
-        stocks: []
+        stocks: [],
+        cash: cash,
+        investment: investment
     });
     await portfolio.save().then(response => {
-        res.status(200).json({"message": response});
+        res.status(200).json({ "message": response });
     })
-    .catch(err => {res.status(500).json({"error": err})});
+        .catch(err => { res.status(500).json({ "error": err }) });
 })
 
 app.get('/api/portfolio', async (req, res) => {
-    try {
-        const result = await Portfolio.find({});    
-        res.status(200).json(result);        
-    } catch (error) {
-        res.status(400).json({"error":error});
+    const portfolioName = req.query.portfolio;
+    const email = req.query.email;
+    if (portfolioName) {
+        Portfolio.findOne({ name: portfolioName, email: email })
+            .then((response) => {
+                res.status(200).json(response);
+            })
+            .catch(err => {
+                console.log(err);
+                res.status(500).json({ err: err });
+            })
+    }
+    else {
+        try {
+            const result = await Portfolio.find({emai: email});
+            res.status(200).json(result);
+        } catch (error) {
+            res.status(500).json({ "error": error });
+        }
     }
 })
 
-app.get('/api/stocks/:name', async(req, res) => {
-    try{
+app.get('/api/stocks/:name', async (req, res) => {
+    try {
         const portFolioName = req.params.name;
         console.log(portFolioName);
 
-        Portfolio.findOne({name: portFolioName})
-        .then(portfolio => {
-            const result = portfolio.stocks;
-            console.log(result);
-            res.status(200).json({result});
-        });
+        Portfolio.findOne({ name: portFolioName })
+            .then(portfolio => {
+                const result = portfolio.stocks;
+                console.log(result);
+                res.status(200).json({ result });
+            });
     }
-    catch(err){
-        res.status(400).json({"error":err});
+    catch (err) {
+        res.status(400).json({ "error": err });
     }
 })
 
-app.post('/api/stocks/:name', async(req, res) => {
+app.post('/api/stocks/:name', async (req, res) => {
     const portFolioName = req.params.name;
     const data = req.body;
+    const email = data.email;
+    delete data.email;
 
-    Portfolio.findOne({name: portFolioName})
-    .then(async portfolio => {
-        portfolio.stocks.push(data);
-        await portfolio.save();    
-    })
-    .catch(err => console.log(err));
+    Portfolio.findOne({ name: portFolioName, email: email })
+        .then(async portfolio => {
+            if(data.buyingPrice * data.count > portfolio.cash) throw Error("Not sufficient cash balance");
+            portfolio.cash -= data.buyingPrice * data.count;
+            portfolio.investment += data.buyingPrice * data.count;
+            portfolio.stocks.push(data);
+            
+            await portfolio.save();
 
-    res.status(200).json({data, name: portFolioName});
+            res.status(200).json({ portfolio, name: portFolioName });
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).json({ msg: "Could not find the portfolio or there might be some other error" });
+        });
+
 })
+
+app.post('/api/cash/:name', async (req, res) => {
+    const portFolioName = req.params.name;
+    const { email, cash } = req.body;
+
+    Portfolio.findOne({ email: email, name: portFolioName })
+        .then(async (portfolio) => {            
+            portfolio.cash = cash;
+            await portfolio.save();            
+            res.status(200).json({ msg: "Added cash successfully" });
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).json({ error: err });
+        })
+});
 
 
 try {

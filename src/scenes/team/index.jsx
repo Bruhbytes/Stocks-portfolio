@@ -17,14 +17,16 @@ const Team = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const [showStocks, setShowStocks] = useState(false);
+  const [stocks, setStocks] = useState([]);
+  
   const [stockName, setStockName] = useState("");
   const [data, setData] = useState(null);
-  const [stocks, setStocks] = useState([]);
 
   const {name} = useParams();
   
   useEffect(() => {
-    fetchStocks();
+    //Not in use as of now...This functionality is copied over to MyHoldings section/Contacts->index.jsx page
+    // fetchStocks();
   }, [])
 
   const fetchStocks = () => {

@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react';
 import { useAuth } from "../context/auth";
 import axios from "axios";
 import Portfolio from "./Portfolio";
-
 import { useNavigate } from "react-router-dom";
+import { setActivePortfolio } from "../features/moneySlice";
+import { useDispatch } from "react-redux";
+
 
 const CreatePortfolio = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -16,7 +18,9 @@ const CreatePortfolio = () => {
     const [errorMessage, setErrorMessage] = useState("");
     const [auth, setAuth] = useAuth();
     const [cardData, setCardData] = useState([]);
-  const navigate = useNavigate();
+    
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     useEffect(() => {
         // Check if the user is logged in
@@ -24,17 +28,17 @@ const CreatePortfolio = () => {
         // const userLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
         if (localStorage.getItem("portauth")) {
-          setIsLoggedIn(true);
-          fetchPortfolios();
-          fillerData();
+            setIsLoggedIn(true);
+            fetchPortfolios();
+            fillerData();
         } else {
-          navigate("/login");
+            navigate("/login");
         }
         // If user is logged in, fetch their portfolios                
-      }, []);
+    }, []);
 
-    
-      const options = {
+
+    const options = {
         method: 'GET',
         url: 'https://apidojo-yahoo-finance-v1.p.rapidapi.com/market/v2/get-summary',
         params: { region: 'IN' },
@@ -56,8 +60,8 @@ const CreatePortfolio = () => {
         }
 
     }
-      const fetchPortfolios = () => {
-        axios.get("http://localhost:4000/api/portfolio")
+    const fetchPortfolios = () => {
+        axios.get(`http://localhost:4000/api/portfolio?email=${auth.user}`)
             .then(response => {
                 if (response.status === 200) {
                     console.log(response.data);
@@ -65,21 +69,24 @@ const CreatePortfolio = () => {
                 }
             })
             .catch(err => console.log(err));
-      };
-    
-      const createPortfolio = () => {
-        // Function to create a new portfolio
-        // This could be implemented to send a request to the backend to create a new portfolio
+    };
+
+    const createPortfolio = () => {
+        // Function to create a new portfolio        
         const newPortfolio = {
-            email: "dsuthar_6@yahoo.com",
+            email: auth.user,
             name: portfolioName,
             currency: currency,
-            stocks: []
+            stocks: [],
+            cash: 0,
+            investment: 0
         };
         axios.post("http://localhost:4000/api/portfolio", newPortfolio, { headers: { "Content-Type": "application/json" } })
             .then((response) => {
                 if (response.status === 200) {
                     console.log(response.data);
+                    dispatch(setActivePortfolio(response.data.message.name));
+                    navigate(`/team/${response.data.message.name}`);                    
                 }
             })
             .catch(error => console.log(error));
@@ -110,7 +117,7 @@ const CreatePortfolio = () => {
                     // eslint-disable-next-line no-restricted-globals
                     const arr = card.spark.close;
                     if (arr) {
-                        change = (arr[arr.length - 1] - arr[0]) / 100                     
+                        change = (arr[arr.length - 1] - arr[0]) / 100
                     }
 
                     return (
@@ -121,11 +128,11 @@ const CreatePortfolio = () => {
                             flexBasis: "10rem",
                             color: "#4cceac",
                             padding: "10px 15px",
-                            margin: "5px",                            
+                            margin: "5px",
                         }}>
                             <h2 style={{ margin: "0" }}>{card.shortName}</h2>
-                            <p style={{ margin: "0", fontSize:"18px" }}>{card.spark.previousClose}</p>
-                            <p style={{ margin: "0", color: change < 0 ? "#f0263a" : "#0afa1e", fontSize:"15px" }}>
+                            <p style={{ margin: "0", fontSize: "18px" }}>{card.spark.previousClose}</p>
+                            <p style={{ margin: "0", color: change < 0 ? "#f0263a" : "#0afa1e", fontSize: "15px" }}>
                                 {change !== 0 && change.toFixed(3)}%
                             </p>
                         </div>
@@ -164,7 +171,7 @@ const CreatePortfolio = () => {
                             Create Portfolio
                         </button>
                     </div>
-                ) }
+                )}
 
                 {/* Modal for Portfolio Creation */}
                 {showModal && (

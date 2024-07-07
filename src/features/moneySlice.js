@@ -1,10 +1,11 @@
 import { createSlice } from "@reduxjs/toolkit"
+import { useEffect } from "react";
+
 const initialState = {
-    money: '0',
+    money: 0,
     activePortfolio: '/',
     investment: 0
 }
-
 
 const moneySlice = createSlice({
     name: "money",

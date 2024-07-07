@@ -17,20 +17,32 @@ import ProgressCircle from "../../components/ProgressCircle";
 import * as React from "react";
 import ReactVirtualizedTable from "../table/Table";
 import ModifiedButton from "../../components/Buttons";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { setMoney, setInvestment } from "../../features/moneySlice";
+import { useAuth } from "../../context/auth";
+import axios from "axios";
 
 const Dashboard = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const [showPopup, setshowpopup] = useState(false);
-  const [investment, setInvestment] = useState(0);
-  // const [cash, setCash] = useState(0);
+  const investment = useSelector(state => state.money.investment);
   const money = useSelector(state => state.money.money)
+  const activePortfolio = useSelector(state => state.money.activePortfolio);
   const dispatch = useDispatch();
+  const [auth, setAuth] = useAuth();
+  const [tempMoney, setTempMoney] = useState();
 
 
+  const addMoneytoDB = () => {
+    dispatch(setMoney(money + tempMoney));
+    axios.post(`/api/cash/${activePortfolio}`, {email: auth.user, cash: money + tempMoney}, {headers: { "Content-Type": "application/json" }})
+    .then((response) => {
+      console.log(response.data);
+    })
+    .catch(err => console.log(err));
+  };
 
 
   return (
@@ -65,7 +77,7 @@ const Dashboard = () => {
           border: "solid #4cceac 3px"
         }}>
           <h2 style={{color:"#4cceac", margin:"1rem auto"}}>Enter the amount of money</h2>
-          <input type="number" style={{width: "100px", margin:"1rem auto", fontSize:"1.5rem", display:"block"}} name="cash" value={money} onChange={(e) => {dispatch(setMoney(e.target.value))}}></input>
+          <input type="number" style={{width: "100px", margin:"1rem auto", fontSize:"1.5rem", display:"block"}} name="cash" value={tempMoney} onChange={(e) => setTempMoney(Number(e.target.value))}></input>
           <Button sx={{
               backgroundColor: colors.blueAccent[700],
               color: colors.grey[100],
@@ -74,7 +86,10 @@ const Dashboard = () => {
               padding: "5px 10px",
 
             }}
-            onClick={() => {setshowpopup(false); dispatch(setInvestment(100))}}
+            onClick={() => {
+              setshowpopup(false);               
+              addMoneytoDB();
+            }}
             >Ok</Button>
         </div>}
         </Box>

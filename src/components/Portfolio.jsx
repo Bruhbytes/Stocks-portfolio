@@ -1,16 +1,28 @@
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { setActivePortfolio} from "../features/moneySlice";
+import { setActivePortfolio, setMoney, setInvestment} from "../features/moneySlice";
+import axios from "axios";
+import { useAuth } from "../context/auth";
 
 
 const Portfolio = (props) => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const [auth, setAuth] = useAuth();
 
 
     function handleClick(){
-        dispatch(setActivePortfolio(props.name));
-        navigate(`/team/${props.name}`);
+        dispatch(setActivePortfolio(props.name));                
+        axios.get(`/api/portfolio?portfolio=${props.name}&email=${auth.user}`)
+        .then((response) => {
+            const object = response.data;            
+            dispatch(setMoney(object.cash));
+            dispatch(setInvestment(object.investment));
+            navigate(`/dashboard`);
+        })
+        .catch(err => {
+            console.log(err);
+        })
 
     }
     return (

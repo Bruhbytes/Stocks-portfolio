@@ -1,33 +1,40 @@
-import { useEffect, useState } from "react";
+import { createRef, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { tokens } from "../theme";
 import { Button, useTheme } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { setMoney, setInvestment } from "../features/moneySlice";
+import AddStock from "./AddStock";
+import Modal from '@mui/material/Modal';
 
 
 const Stock = (props) => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
-    const data = {
-        name: props.name,
-        symbol: props.symbol,
-        exchange: props.exchange,
-        issueId: props.issueID,
-        country: props.country
-    }
+    // const data = {
+    //     name: props.name,
+    //     symbol: props.symbol,
+    //     exchange: props.exchange,
+    //     issueId: props.issueID,
+    //     country: props.country,
+    //     buyingPrice: 194.67,
+    //     count: 4
+    // }    
     const [allocation, setAllocation] = useState(0);
+    const [open, setOpen] = useState(false);    
     const dispatch = useDispatch();
     const money = useSelector((state) => state.money.money);
     const investment = useSelector((state) => state.money.investment);
 
-    function handleClick() {
-        axios.post(`http://localhost:4000/api/stocks/${props.portfolioName}`, data, { headers: { "Content-Type": "application/json" } })
-            .then(response => {
-                console.log(response.data);
-            })
-            .catch(err => console.log(err));
-    }
+    // function handleClick() {
+    //     axios.post(`http://localhost:4000/api/stocks/${props.portfolioName}`, data, { headers: { "Content-Type": "application/json" } })
+    //         .then(response => {
+    //             console.log(response.data);
+    //         })
+    //         .catch(err => console.log(err));                
+    // }    
+    function handleOpen(){setOpen(true);}
+    function handleClose(){setOpen(false);}
     return (
         <div style={{
             backgroundColor: "#1F2A40",
@@ -53,8 +60,18 @@ const Stock = (props) => {
                 zIndex:"10",
                 top:"10px"
             }}
-            onClick={handleClick}
+            onClick={handleOpen}
             >Add Stock</Button>
+
+            {/* {showpopup && <AddStock setShowpopup={setShowpopup}/>} */}
+            <Modal
+                open={open}                
+                onClose={handleClose}
+                aria-labelledby="modal-modal-title"
+                aria-describedby="modal-modal-description"
+            >
+                <AddStock onClose={handleClose} {...props} />
+            </Modal>
 
             <input type="text" value={allocation} onChange={(e) => {
                 setAllocation(e.target.value)                

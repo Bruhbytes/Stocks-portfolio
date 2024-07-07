@@ -16,13 +16,14 @@ const AuthProvider = ({children}) => {
     
     useEffect(() => {
         const data = localStorage.getItem('portauth');
+        const email = localStorage.getItem('email');
         if(data) {
             const parsedData = JSON.parse(data);
 
-            setAuth({...auth,
-                user:parsedData.user,
-                token:parsedData.token
-            });
+            setAuth({               
+                token:parsedData,
+                user: email
+            });            
 
         }
         //eslint-disable-next-line

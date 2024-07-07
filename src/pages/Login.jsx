@@ -39,9 +39,13 @@ const Login = () => {
         if (response && response.data.success) {
           
           console.log(response.data.token);
+          console.log("Email", response.data.email);
+          setAuth({...auth,
+            user: response.data.email
+          })
   
-          localStorage.setItem("portauth", JSON.stringify(response.data.token));
-          // navigate("/");
+          localStorage.setItem("portauth", JSON.stringify(response.data.token));          
+          localStorage.setItem("email", response.data.email);
           navigate("/")
         } else {
           

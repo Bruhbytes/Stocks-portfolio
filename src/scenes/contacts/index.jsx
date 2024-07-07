@@ -134,6 +134,7 @@ const Contacts = () => {
           }
         }
       };
+      //Uncomment this to activate the fetch function to rapid api
       fetchData();
     }
   }, [stocks]);

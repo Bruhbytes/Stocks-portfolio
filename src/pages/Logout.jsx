@@ -16,6 +16,7 @@ const Logout = () => {
     });
     // Redirecting the page after logout.
     localStorage.removeItem("portauth");
+    localStorage.removeItem("email");
     toast.success("Logout successfully");
     window.location.href="/login"
   };
