@@ -13,10 +13,10 @@ const Metrics = () => {
   const location = useLocation();
   const { symbol } = location.state || { symbol: null };
 
-  useEffect(()=>{
+  useEffect(() => {
     console.log("Fetching stock data for symbol:", symbol);
     fetchStockData();
-  },[])
+  }, []);
 
   const handleTickerChange = (e) => {
     setTicker(e.target.value);
@@ -137,9 +137,9 @@ const Metrics = () => {
           }}
         >
           {/* <h1 style={{ color: "white" }}>Stock Metrics</h1> */}
-          <h1
-            style={{ marginBottom: "10px", padding: "5px" }}
-          >Performance Metrics of the Symbol</h1>
+          <h1 style={{ marginBottom: "10px", padding: "5px" }}>
+            Performance Metrics of the Symbol
+          </h1>
           {/* <button
             onClick={fetchStockData}
             style={{ padding: "5px 10px", cursor: "pointer" }}
@@ -149,35 +149,29 @@ const Metrics = () => {
         </div>
         <div
           style={{
-            display: "relative",
-            flexDirection: "column",
-            width: "100%",
-            flexWrap: "wrap",
-            gap: "2rem",
-            backgroundColor: "#151632",
+            display: "flex",
+            flexDirection: "row",
             justifyContent: "center",
-            borderRadius: "2px",
+            alignItems: "center",
+            gap: "20px",
+            padding: "20px",
+            backgroundColor: "#151632",
           }}
         >
           {snapshotImage && (
-            <div
-              style={{
-                border: "1px solid #ccc",
-                padding: "20px",
-                maxWidth: "100%",
-                textAlign: "left",
-                // alignContent: "left",
-              }}
-            >
+            <div style={{ border: "1px solid #ccc" }}>
               <img
                 src={snapshotImage}
                 alt="Snapshot"
                 style={{
                   maxWidth: "100%",
                   maxHeight: "400px",
-                  paddingLeft: "90px",
                 }}
               />
+            </div>
+          )}
+          {vssyp && (
+            <div style={{ border: "0.5px solid #ccc" }}>
               <img
                 src={vssyp}
                 alt="Snapshot1"
@@ -201,7 +195,8 @@ const Metrics = () => {
           }}
         >
           {/* Existing code for snapshot image */}
-          <div
+          <div>Sharpe Ratio: {sharpeRatio}</div>
+          {/* <div
             style={{
               ...boxStyle,
               background: "#1e2a41",
@@ -211,8 +206,9 @@ const Metrics = () => {
             }}
           >
             {sharpeRatio !== null && <div>Sharpe Ratio: {sharpeRatio}</div>}
-          </div>
-          <div
+          </div> */}
+          <div>CAGR: {(cagr * 100).toFixed(2)}%</div>
+          {/* <div
             style={{
               ...boxStyle,
               background: "#1e2a41",
@@ -221,9 +217,10 @@ const Metrics = () => {
               boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.2)", // Box shadow to highlight the box
             }}
           >
-            {cagr !== null && <div>CAGR: {(cagr * 100).toFixed(2)}%</div>}
-          </div>
-          <div
+            {cagr !== null && <div>CAGR: {(cagr * 100).toFixed(2)}%</div>} */}
+          <div>Maximum Drawdown: {(maxDrawdown * 100).toFixed(2)}%</div>
+          {/* </div> */}
+          {/* <div
             style={{
               ...boxStyle,
               background: "#1e2a41",
@@ -235,8 +232,8 @@ const Metrics = () => {
             {maxDrawdown !== null && (
               <div>Maximum Drawdown: {(maxDrawdown * 100).toFixed(2)}%</div>
             )}
-          </div>
-
+          </div> */}
+          {/* 
           <div
             style={{
               ...boxStyle,
@@ -245,20 +242,20 @@ const Metrics = () => {
               height: "48px",
               boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.2)", // Box shadow to highlight the box
             }}
-          >
-            {Object.keys(volatility).length > 0 && (
-              <div>
-                {/* <h3>Monthly Volatility</h3> */}
-                <ul style={{ listStyleType: "none", padding: 0 }}>
-                  {Object.entries(volatility).map(([month, value]) => (
-                    <li key={month} style={{ marginBottom: "5px" }}>
-                      {month}: {(value * 100).toFixed(2)}%
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
+          > */}
+          {Object.keys(volatility).length > 0 && (
+            <div>
+              {/* <h3>Monthly Volatility</h3> */}
+              <ul style={{ listStyleType: "none", padding: 0 }}>
+                {Object.entries(volatility).map(([month, value]) => (
+                  <li key={month} style={{ marginBottom: "5px" }}>
+                    {month}: {(value * 100).toFixed(2)}%
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {/* </div> */}
         </div>
       </div>
     </>

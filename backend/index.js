@@ -184,7 +184,7 @@ app.get('/api/portfolio', async (req, res) => {
     }
     else {
         try {
-            const result = await Portfolio.find({emai: email});
+            const result = await Portfolio.find({email: email});
             res.status(200).json(result);
         } catch (error) {
             res.status(500).json({ "error": error });
@@ -262,7 +262,7 @@ try {
             process.exit(1);
         });
 
-    app.listen(4000, (req, res) => {
+    app.listen(process.env.PORT, (req, res) => {
         console.log("Server started on 4000");
     })
 }

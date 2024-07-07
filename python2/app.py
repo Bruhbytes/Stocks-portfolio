@@ -116,7 +116,8 @@ def get_max_drawdown():
 @cross_origin()
 def set_stock():
     global ticker
-    ticker = request.json.get('symbol')
+    # ticker = request.json.get('symbol')
+    ticker = 'XHB'
     if ticker:
         global stock
         stock = None  # Reset the stock data

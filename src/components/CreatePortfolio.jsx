@@ -1,6 +1,5 @@
 import "../pages/common.css";
-import React from 'react'
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from "../context/auth";
 import axios from "axios";
 import Portfolio from "./Portfolio";
@@ -15,18 +14,15 @@ const CreatePortfolio = () => {
     const [showModal, setShowModal] = useState(false);
     const [portfolioName, setPortfolioName] = useState("");
     const [currency, setCurrency] = useState("");
-    const [errorMessage, setErrorMessage] = useState("");
+    // const [errorMessage, setErrorMessage] = useState("");
     const [auth, setAuth] = useAuth();
     const [cardData, setCardData] = useState([]);
-    
+
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const modalRef = useRef();
 
     useEffect(() => {
-        // Check if the user is logged in
-        // Simulate user login status with localStorage
-        // const userLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-
         if (localStorage.getItem("portauth")) {
             setIsLoggedIn(true);
             fetchPortfolios();
@@ -34,9 +30,20 @@ const CreatePortfolio = () => {
         } else {
             navigate("/login");
         }
-        // If user is logged in, fetch their portfolios                
-    }, []);
+    }, [auth]);
 
+    useEffect(() => {  
+        const handleClickOutside = (event) => {
+            if (modalRef.current && !modalRef.current.contains(event.target)) {
+                setShowModal(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     const options = {
         method: 'GET',
@@ -48,24 +55,22 @@ const CreatePortfolio = () => {
         }
     };
 
-
     const fillerData = async () => {
         try {
             const response = await axios.request(options);
-            console.log(response.data.marketSummaryAndSparkResponse.result);
-            setCardData(response.data.marketSummaryAndSparkResponse.result)
-
+            setCardData(response.data.marketSummaryAndSparkResponse.result);
         } catch (error) {
             console.error(error);
         }
+    };
 
-    }
+
     const fetchPortfolios = () => {
         axios.get(`http://localhost:4000/api/portfolio?email=${auth.user}`)
             .then(response => {
                 if (response.status === 200) {
-                    console.log(response.data);
                     setPortfolios(response.data);
+                    console.log(portfolios);
                 }
             })
             .catch(err => console.log(err));
@@ -86,22 +91,20 @@ const CreatePortfolio = () => {
                 if (response.status === 200) {
                     console.log(response.data);
                     dispatch(setActivePortfolio(response.data.message.name));
-                    navigate(`/team/${response.data.message.name}`);                    
+                    navigate(`/team/${response.data.message.name}`);
+                    setShowModal(false); // Close modal after creating portfolio
+                    // setPortfolioName(""); // Reset form
+                    // setCurrency(""); // Reset form
+                    // fetchPortfolios(); // Fetch updated portfolios
                 }
             })
             .catch(error => console.log(error));
+    }
 
-        // const updatedPortfolios = [...portfolios, newPortfolio]; // Add the new portfolio to the list
-        // setPortfolios(updatedPortfolios);
-        // setShowModal(false);
-        // setPortfolioName("");
-        // setCurrency("");
-
-    };
 
     return (
         <div>
-            <h1>Welcome to Your Dashboard</h1>
+            <h1 className="welcome-heading">Welcome to Your Dashboard</h1>
             <div style={{
                 display: "flex",
                 flexDirection: "row",
@@ -113,8 +116,6 @@ const CreatePortfolio = () => {
             }}>
                 {cardData.length > 0 && cardData.slice(0, 6).map((card, ind) => {
                     var change = 0;
-                    var status = "green"
-                    // eslint-disable-next-line no-restricted-globals
                     const arr = card.spark.close;
                     if (arr) {
                         change = (arr[arr.length - 1] - arr[0]) / 100
@@ -173,14 +174,14 @@ const CreatePortfolio = () => {
                     </div>
                 )}
 
-                {/* Modal for Portfolio Creation */}
+                {/* //portfolio modal */}
                 {showModal && (
                     <div className="modal">
-                        <div className="modal-content">
+                        <div className="modal-content" ref={modalRef}>
                             <span className="close" onClick={() => setShowModal(false)}>
                                 &times;
                             </span>
-                            <h2 color="black">Create Portfolio</h2>
+                            <h2>Create Portfolio</h2>
                             <input
                                 type="text"
                                 placeholder="Portfolio Name"
@@ -194,7 +195,6 @@ const CreatePortfolio = () => {
                                 <option value="">Select Currency</option>
                                 <option value="USD">USD</option>
                                 <option value="INR">INR</option>
-                                {/* Add more currency options */}
                             </select>
                             <button onClick={createPortfolio}>Create</button>
                         </div>
