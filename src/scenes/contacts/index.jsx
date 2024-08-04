@@ -12,6 +12,7 @@ import { setMoney, setInvestment } from "../../features/moneySlice";
 import { useDispatch, useSelector } from "react-redux";
 
 import { Navigate } from "react-router-dom";
+import { useAuth } from "../../context/auth";
 
 const Contacts = () => {
   const theme = useTheme();
@@ -21,9 +22,10 @@ const Contacts = () => {
   const { name } = useParams();
   const [Detailed, setDetailed] = useState([]);
   const [idCtr, setIdctr] = useState(0);
-  const [allocation, setAllocation] = useState(0);
+  const [allocation1, setAllocation1] = useState();
+  const [allocation2, setAllocation2] = useState();
   const [strategy, setStrategy] = useState(null);
-  const [show, setShow] = useState(false);
+  const [auth, setAuth] = useAuth();
 
   const dispatch = useDispatch();
   const money = useSelector((state) => state.money.money);
@@ -32,6 +34,7 @@ const Contacts = () => {
 
   const navigate = useNavigate();
   useEffect(() => {
+    if(auth) console.log(auth.user);
     fetchStocks();
     // getStrategy();
   }, []);
@@ -63,31 +66,15 @@ const Contacts = () => {
     },
   };
 
-  // useEffect(() => {
-  //   if (stocks && stocks.length > 0) {
-
-  //     setTimeout(fetchDetailedStocks, 3000);
-  //   }
-  // }, [stocks, setStocks])
-
   function fetchStocks() {
     axios.get(`http://localhost:4000/api/stocks/${name}`)
       .then(response => {
-        console.log(response.data.result);
+        // console.log(response.data.result);
         if (response.status === 200)
           setStocks(response.data.result);
       })
       .catch(err => console.log(err));
   }
-
-  // function getStrategy(){
-  //   axios.get('http://localhost:5000/strategy1')
-  //   .then(response => {
-  //     console.log(response.data);
-  //     setStrategy(response.data);
-  //   })
-  //   .catch(err => console.log(err));
-  // }
 
   const handleGiveAllocation = async () => {
     try {
@@ -107,7 +94,7 @@ const Contacts = () => {
 
       const stocksData = await Promise.all(
         sectorsArray.map(async (stock) => {
-          
+
           const options = {
             method: "GET",
             url: `https://yahoo-finance127.p.rapidapi.com/price/${stock}`,
@@ -127,11 +114,11 @@ const Contacts = () => {
                 symbol: response.data.symbol,
                 last: response.data.regularMarketPrice.raw,
               };
-              return { 
-                symbol: da.symbol, 
+              return {
+                symbol: da.symbol,
                 buyingPrice: da.last,
                 country: response.data.region,
-                exchange: response.data.fullExchangeName, 
+                exchange: response.data.fullExchangeName,
               };
             } catch (error) {
               if (error.response && error.response.status === 429) {
@@ -162,19 +149,19 @@ const Contacts = () => {
       if (validStocksData.length === 0) {
         throw new Error("No valid stock data available");
       }
-     
+
       const response = await axios.post("/api/invest", {
         name: pname,
-        allocation: allocation,
+        allocation: allocation1,
         stocksData: validStocksData,
       });
 
       console.log("Investment response:", response.data);
-      dispatch(setMoney(money -  response.data.invested_amount))
+      dispatch(setMoney(money - response.data.invested_amount))
       dispatch(setInvestment(investment + response.data.invested_amount));
       fetchData(response.data.new_stocks);
     } catch (error) {
-      console.error("Error in handleGiveAllocation:", error);      
+      console.error("Error in handleGiveAllocation:", error);
     }
   };
 
@@ -208,11 +195,11 @@ const Contacts = () => {
 
       try {
         let object;
-        if(stock.issueId){
+        if (stock.issueId) {
           const response = await axios.request(options);
           console.log("final", response.data.ITVQuoteResult.ITVQuote);
           object = {
-            id: `${stock._id}`,
+            id: uuidv4().slice(0, 14),
             symbol: response.data.ITVQuoteResult.ITVQuote.symbol,
             last: response.data.ITVQuoteResult.ITVQuote.last,
             high: response.data.ITVQuoteResult.ITVQuote.high,
@@ -222,14 +209,14 @@ const Contacts = () => {
             exchange: response.data.ITVQuoteResult.ITVQuote.exchange,
             open: response.data.ITVQuoteResult.ITVQuote.open,
             currency: response.data.ITVQuoteResult.ITVQuote.currencyCode
-          };          
+          };
         }
-        else{
+        else {
           const response = await axios.request(options2);
-          
+
           object = {
             id: stock._id === null ? `${uuidv4()}` : `${stock._id}`,
-            symbol:`${stock.symbol}`,
+            symbol: `${stock.symbol}`,
             last: response.data.data.price,
             high: response.data.data.high,
             low: response.data.data.low,
@@ -238,23 +225,94 @@ const Contacts = () => {
             exchange: `${stock.exchange}`,
             open: response.data.data.open,
             currency: stock.country === 'US' ? "USD" : "INR",
-          }          
+          }
         }
         newDetailed.push(object);
         setIdctr(idCtr + 1);
       } catch (error) {
         console.error(error);
-      }      
+      }
     }
+    console.log(newDetailed);
     setDetailed(prevDetailed => [...prevDetailed, ...newDetailed]);
   };
+
+
   useEffect(() => {
     if (stocks) {
       //Uncomment this to activate the fetch function to rapid api
-      // fetchData(stocks);      
+      fetchData(stocks);      
     }
   }, [stocks]);
 
+  const handleStrategy2 = async () => {
+    let ETF = [];
+    const reponse = await axios.get("http://localhost:5000/strategy2");
+    ETF = reponse.data;
+
+    let issueIdStr = "";
+    const promises =  ETF.map(async (stock) => {
+      const options = {
+        method: 'GET',
+        url: 'https://cnbc.p.rapidapi.com/symbols/translate',
+        params: {symbol: `${stock}`},
+        headers: {
+          'x-rapidapi-key': '2abc076573msh842064a611d99bfp1579c6jsn755dbe9509d7',
+          'x-rapidapi-host': 'cnbc.p.rapidapi.com'
+        }
+      };
+
+      //Calling translate endpoint of CNBC to get all issueIds
+      try{
+        const resp = await axios.request(options);
+        return `${resp.data.issueId}`
+      }
+      catch (err){
+        console.log("Error fetching issueID");
+        return null;
+      }      
+    })    
+    const results = await Promise.all(promises);
+    issueIdStr = results.filter(id => id !== null).join(",");
+    console.log(issueIdStr);
+    
+    //Calling get-summary endpoint of CNBC API
+    const options = {
+      method: 'GET',
+      url: 'https://cnbc.p.rapidapi.com/symbols/get-summary',
+      params: {
+        issueIds: issueIdStr
+      },
+      headers: {
+        'x-rapidapi-key': '2abc076573msh842064a611d99bfp1579c6jsn755dbe9509d7',
+        'x-rapidapi-host': 'cnbc.p.rapidapi.com'
+      }
+    };
+    try{
+      const resp = await axios.request(options);
+      console.log(resp.data.ITVQuoteResult.ITVQuote);
+
+      axios.post("/api/invest/strategy2", {
+        email: auth.user,
+        pname: pname,
+        allocation: allocation2,
+        stocks: resp.data.ITVQuoteResult.ITVQuote
+      }, {headers: {"Content-Type": "application/json"}})
+      .then((response) => {        
+        console.log("Investment response:", response.data);
+        dispatch(setMoney(money - response.data.invested_amount))
+        dispatch(setInvestment(investment + response.data.invested_amount));
+        fetchData(response.data.new_stocks);
+      })
+      .catch(err => {
+        console.log(err)
+        window.alert(err.response.data);
+      });
+    }
+    catch (err){
+      console.log("Error fetching the prices from issueIds");
+    }
+  }
 
 
 
@@ -355,44 +413,52 @@ const Contacts = () => {
           getRowId={(row) => row.id}
         />
 
-        
-        <Button sx={{
-          backgroundColor: colors.blueAccent[700],
-          color: colors.grey[100],
-          fontSize: "15px",
-          fontWeight: "bold",
-          padding: "5px 10px",
-          margin: "1rem",
-          display: "inline",
-          // position:"absolute",
-          // right:"20px",
-          zIndex: "10",
-          // top:"10px"
-        }}
+        <div>
+          <Button sx={{
+            backgroundColor: colors.blueAccent[700],
+            color: colors.grey[100],
+            fontSize: "15px",
+            fontWeight: "bold",
+            padding: "5px 10px",
+            margin: "1rem",
+            display: "inline",
+            // position:"absolute",
+            // right:"20px",
+            zIndex: "10",
+            // top:"10px"
+          }}
+            onClick={() => {              
+              if (allocation1 === 0) {
+                window.alert("Please provide valid allocation");
+              }
+              else handleGiveAllocation();
+            }}
+          >Get stocks using Strategy 1</Button>
+
+          <input placeholder="In percentage" value={allocation1} name="allocation1" onChange={(e) => setAllocation1(e.target.value)}></input>
+        </div>
+
+        <div>
+          <Button sx={{
+            backgroundColor: colors.blueAccent[700],
+            color: colors.grey[100],
+            fontSize: "15px",
+            fontWeight: "bold",
+            padding: "5px 10px",
+            margin: "1rem",
+            display: "inline",
+            zIndex: "10",
+          }}
           onClick={() => {
-            setShow(true);
-            if(allocation === 0){
+            if(allocation2 <= 0){
               window.alert("Please provide valid allocation");
             }
-            else handleGiveAllocation();
+            else handleStrategy2();
           }}
-        >Get stocks using Strategy 1</Button>
+          >Get Stocks using Strategy 2</Button>
 
-        <input value={allocation} name="allocation" onChange={(e) => setAllocation(e.target.value)}></input>
-
-        {/* <Button sx={{
-          backgroundColor: colors.blueAccent[700],
-          color: colors.grey[100],
-          fontSize: "15px",
-          fontWeight: "bold",
-          padding: "5px 10px",
-          margin: "1rem",
-          display: "inline",
-          zIndex: "10",
-        }}
-        >Get Stocks using Strategy 2</Button>         */}
-        
-        {/* <input></input> */}
+          <input placeholder="In percentage" type="number" value={allocation2} name="allocation2" onChange={(e) => setAllocation2(e.target.value)}></input>
+        </div>
 
       </Box>
     </Box>

@@ -72,7 +72,7 @@ def strategy2():
     moving_averages={}
     result=[]
     # Define the assets
-    assets = ['SPY', 'MTUM', 'IWN', 'EFA', 'EEM', 'IEF', 'BWX', 'LQD', 'TLT', 'DBC', 'GLD', 'VNQ']
+    assets = ['SPY', 'EFA', 'IEF', 'BWX', 'LQD', 'TLT', 'DBC', 'GLD', 'VNQ']
 
     # Download historical price data for SPY
     for ticker in assets:

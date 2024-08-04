@@ -184,7 +184,7 @@ app.get('/api/portfolio', async (req, res) => {
     }
     else {
         try {
-            const result = await Portfolio.find({email: email});
+            const result = await Portfolio.find({ email: email });
             res.status(200).json(result);
         } catch (error) {
             res.status(500).json({ "error": error });
@@ -200,7 +200,7 @@ app.get('/api/stocks/:name', async (req, res) => {
         Portfolio.findOne({ name: portFolioName })
             .then(portfolio => {
                 const result = portfolio.stocks;
-                console.log(result);
+                // console.log(result);
                 res.status(200).json({ result });
             });
     }
@@ -217,11 +217,11 @@ app.post('/api/stocks/:name', async (req, res) => {
 
     Portfolio.findOne({ name: portFolioName, email: email })
         .then(async portfolio => {
-            if(data.buyingPrice * data.count > portfolio.cash) throw Error("Not sufficient cash balance");
+            if (data.buyingPrice * data.count > portfolio.cash) throw Error("Not sufficient cash balance");
             portfolio.cash -= data.buyingPrice * data.count;
             portfolio.investment += data.buyingPrice * data.count;
             portfolio.stocks.push(data);
-            
+
             await portfolio.save();
 
             res.status(200).json({ portfolio, name: portFolioName });
@@ -238,9 +238,9 @@ app.post('/api/cash/:name', async (req, res) => {
     const { email, cash } = req.body;
 
     Portfolio.findOne({ email: email, name: portFolioName })
-        .then(async (portfolio) => {            
+        .then(async (portfolio) => {
             portfolio.cash = cash;
-            await portfolio.save();            
+            await portfolio.save();
             res.status(200).json({ msg: "Added cash successfully" });
         })
         .catch(err => {
@@ -251,83 +251,152 @@ app.post('/api/cash/:name', async (req, res) => {
 
 app.post("/api/invest", async (req, res) => {
     try {
-      const { name, allocation, stocksData } = req.body;
-  
-      if (!name || !allocation || !stocksData) {
-        return res
-          .status(400)
-          .json({ error: "Name, allocation, and stocksData are required" });
-      }
-  
-      const portfolio = await Portfolio.findOne({ name });
-      if (!portfolio) {
-        return res.status(404).json({ error: "Portfolio not found" });
-      }
-  
-      const availableCash = portfolio.cash;
-      const investmentAmount = (allocation / 100) * availableCash;
-      const amountPerStock = investmentAmount / stocksData.length;
-  
-      const newStocks = stocksData.map(({ symbol, buyingPrice, country, exchange }) => {
-        const sharesToBuy = Math.floor(amountPerStock / buyingPrice);
-        
-        return ({
-          name: `${symbol} ETF`,
-          symbol: symbol,          
-          count: sharesToBuy,
-          buyingPrice: buyingPrice,
-          country: country,
-          exchange: exchange,
-        });
-      });
-  
-      const actualInvestmentAmount = newStocks.reduce(
-        (total, stock) =>
-          total +
-          stock.count *
-            stocksData.find((s) => s.symbol === stock.symbol).buyingPrice,
-        0
-      );
+        const { name, allocation, stocksData } = req.body;
 
-      console.log("investment", actualInvestmentAmount);
-  
-      if (actualInvestmentAmount > availableCash) {
-        return res
-          .status(400)
-          .json({ error: "Insufficient funds for investment" });
-      }
-  
-      const updateResult = await Portfolio.updateOne(
-        { name },
-        {
-          $push: { stocks: { $each: newStocks } },
-          $inc: {
-            cash: -actualInvestmentAmount,
-            investment: actualInvestmentAmount,
-          },
+        if (!name || !allocation || !stocksData) {
+            return res
+                .status(400)
+                .json({ error: "Name, allocation, and stocksData are required" });
         }
-      );
-  
-      if (updateResult.modifiedCount === 0) {
-        return res.status(500).json({ error: "Failed to update portfolio" });
-      }
-  
-      res.json({
-        message: "Investment successful",
-        invested_amount: actualInvestmentAmount,
-        new_stocks: newStocks,
-      });
-    } catch (error) {
-      console.error("Error:", error);
-      res
-        .status(500)
-        .json({ error: "An error occurred while processing the investment" });
-    }
-  });
 
-//   app.post("/api/invest/strategy2", async (req, res) => {
-//     const {pname, allocation} = req.body;
-//   });
+        const portfolio = await Portfolio.findOne({ name });
+        if (!portfolio) {
+            return res.status(404).json({ error: "Portfolio not found" });
+        }
+
+        const availableCash = portfolio.cash;
+        const investmentAmount = (allocation / 100) * availableCash;
+        const amountPerStock = investmentAmount / stocksData.length;
+
+        const newStocks = stocksData.map(({ symbol, buyingPrice, country, exchange }) => {
+            const sharesToBuy = Math.floor(amountPerStock / buyingPrice);
+
+            return ({
+                name: `${symbol} ETF`,
+                symbol: symbol,
+                count: sharesToBuy,
+                buyingPrice: buyingPrice,
+                country: country,
+                exchange: exchange,
+            });
+        });
+
+        const actualInvestmentAmount = newStocks.reduce(
+            (total, stock) =>
+                total +
+                stock.count *
+                stocksData.find((s) => s.symbol === stock.symbol).buyingPrice,
+            0
+        );
+
+        console.log("investment", actualInvestmentAmount);
+
+        if (actualInvestmentAmount > availableCash) {
+            return res
+                .status(400)
+                .json({ error: "Insufficient funds for investment" });
+        }
+
+        const updateResult = await Portfolio.updateOne(
+            { name },
+            {
+                $push: { stocks: { $each: newStocks } },
+                $inc: {
+                    cash: -actualInvestmentAmount,
+                    investment: actualInvestmentAmount,
+                },
+            }
+        );
+
+        if (updateResult.modifiedCount === 0) {
+            return res.status(500).json({ error: "Failed to update portfolio" });
+        }
+
+        res.json({
+            message: "Investment successful",
+            invested_amount: actualInvestmentAmount,
+            new_stocks: newStocks,
+        });
+    } catch (error) {
+        console.error("Error:", error);
+        res
+            .status(500)
+            .json({ error: "An error occurred while processing the investment" });
+    }
+});
+
+app.post("/api/invest/strategy2", async (req, res) => {
+    const { email, pname, allocation, stocks } = req.body;
+    const stockWeightage = new Map([
+        ["SPY", 1], ["IEF", 1], ["BWX", 1], ["LQD", 1], ["TLT", 1],
+        ["EFA", 2], ["DBC", 2], ["GLD", 2],
+        ["VNQ", 4]
+    ]);
+    const portfolio = await Portfolio.findOne({ email: email, name: pname });
+    if (!portfolio) {
+        res.status(404).json({ Error: "Could not find the portfolio" });
+        return
+    }
+    const availableCash = (allocation / 100) * portfolio.cash;
+
+    const total = stocks.reduce((divisor, stock) => {
+        return divisor + stockWeightage.get(stock.symbol)
+    }, 0)
+
+    const amountForEachStock = availableCash / total;
+
+    const newStocks = stocks.map((stock) => {
+        const count = Math.floor((amountForEachStock * stockWeightage.get(stock.symbol)) / stock.last);
+        if (count > 0) {
+            return ({
+                name: stock.name,
+                symbol: stock.symbol,
+                issueId: stock.issue_id,
+                count: count,
+                buyingPrice: stock.last,
+                country: stock.countryCode,
+                exchange: stock.exchange
+            })
+        }
+    }).filter(stock => stock !== undefined);
+        
+    if(newStocks.length === 0){
+        res.status(400).json({ Error: "Add money to your portfolio" });
+        return;
+    }
+    const investedAmount = newStocks.reduce((total, stock) => {
+        return total + (stock.buyingPrice * stock.count)
+    }, 0)
+
+    console.log("IA", investedAmount);
+    console.log("AC", availableCash);
+    if (investedAmount > availableCash) {
+        res.status(400).json({ Error: "Cash Exceeded Error" });
+        return;
+    }
+
+    const updateResult = await Portfolio.updateOne(
+        { email: email, name: pname },
+        {
+            $push: { stocks: { $each: newStocks } },
+            $inc: {
+                cash: -investedAmount,
+                investment: investedAmount,
+            },
+        }
+    );
+
+    if (updateResult.modifiedCount === 0) {
+        return res.status(500).json({ error: "Failed to update portfolio" });
+    }
+
+    res.status(200).json({
+        message: "Investment successful",
+        invested_amount: investedAmount,
+        new_stocks: newStocks,
+    });
+
+});
 
 
 try {

@@ -113,7 +113,7 @@ const Dashboard = () => {
           justifyContent="center"
         >
           <StatBox
-            title={investment}
+            title={Math.round(investment * 100) / 100}
             subtitle="Total Investment"
             progress="0.0"
             // increase="+14%"
@@ -132,7 +132,7 @@ const Dashboard = () => {
           justifyContent="center"
         >
           <StatBox
-            title={money}
+            title={Math.round(money * 100) / 100}
             subtitle="Cash Holdings"
             progress="100"
             // increase="+21%"
