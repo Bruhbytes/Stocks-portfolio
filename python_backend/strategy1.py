@@ -52,7 +52,8 @@ def strategy1():
         return_9_months = ((price_end / price_start_9_months) - 1) * 100
         return_12_months = ((price_end / price_start_12_months) - 1) * 100
 
-        returns[f"avg_return_{ticker}"] = (return_1_month + return_3_months + return_6_months + return_9_months + return_12_months) / 5
+        # returns[f"avg_return_{ticker}"] = (return_1_month + return_3_months + return_6_months + return_9_months + return_12_months) / 5
+        returns[f"{ticker}"] = (return_1_month + return_3_months + return_6_months + return_9_months + return_12_months) / 5
 
     # Sort the dictionary by values in descending order
     sorted_dict = OrderedDict(sorted(returns.items(), key=lambda item: item[1], reverse=True))

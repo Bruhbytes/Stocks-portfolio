@@ -249,6 +249,86 @@ app.post('/api/cash/:name', async (req, res) => {
         })
 });
 
+app.post("/api/invest", async (req, res) => {
+    try {
+      const { name, allocation, stocksData } = req.body;
+  
+      if (!name || !allocation || !stocksData) {
+        return res
+          .status(400)
+          .json({ error: "Name, allocation, and stocksData are required" });
+      }
+  
+      const portfolio = await Portfolio.findOne({ name });
+      if (!portfolio) {
+        return res.status(404).json({ error: "Portfolio not found" });
+      }
+  
+      const availableCash = portfolio.cash;
+      const investmentAmount = (allocation / 100) * availableCash;
+      const amountPerStock = investmentAmount / stocksData.length;
+  
+      const newStocks = stocksData.map(({ symbol, buyingPrice, country, exchange }) => {
+        const sharesToBuy = Math.floor(amountPerStock / buyingPrice);
+        
+        return ({
+          name: `${symbol} ETF`,
+          symbol: symbol,          
+          count: sharesToBuy,
+          buyingPrice: buyingPrice,
+          country: country,
+          exchange: exchange,
+        });
+      });
+  
+      const actualInvestmentAmount = newStocks.reduce(
+        (total, stock) =>
+          total +
+          stock.count *
+            stocksData.find((s) => s.symbol === stock.symbol).buyingPrice,
+        0
+      );
+
+      console.log("investment", actualInvestmentAmount);
+  
+      if (actualInvestmentAmount > availableCash) {
+        return res
+          .status(400)
+          .json({ error: "Insufficient funds for investment" });
+      }
+  
+      const updateResult = await Portfolio.updateOne(
+        { name },
+        {
+          $push: { stocks: { $each: newStocks } },
+          $inc: {
+            cash: -actualInvestmentAmount,
+            investment: actualInvestmentAmount,
+          },
+        }
+      );
+  
+      if (updateResult.modifiedCount === 0) {
+        return res.status(500).json({ error: "Failed to update portfolio" });
+      }
+  
+      res.json({
+        message: "Investment successful",
+        invested_amount: actualInvestmentAmount,
+        new_stocks: newStocks,
+      });
+    } catch (error) {
+      console.error("Error:", error);
+      res
+        .status(500)
+        .json({ error: "An error occurred while processing the investment" });
+    }
+  });
+
+//   app.post("/api/invest/strategy2", async (req, res) => {
+//     const {pname, allocation} = req.body;
+//   });
+
 
 try {
     mongoose
